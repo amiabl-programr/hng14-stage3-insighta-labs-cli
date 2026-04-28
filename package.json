@@ -16,7 +16,7 @@
   "license": "ISC",
   "description": "",
   "bin": {
-    "insighta-cli": "./dist/index.js"
+    "insighta-cli": "./dist/bin/cli.js"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.10.1",
