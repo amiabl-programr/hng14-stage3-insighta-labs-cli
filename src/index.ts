@@ -3,7 +3,7 @@
 import { Command } from 'commander';
 import { input } from '@inquirer/prompts';
 
-const program = new Command();
+export const program = new Command();
 
 program
   .name('insighta-cli')
@@ -14,11 +14,9 @@ program
   .command('greet')
   .description('Greet a user')
   .action(async () => {
-    const answer = await input({ message: 'What is your name?' });
-    console.log(`Hello, ${answer}!`);
+    await input({ message: 'What is your name?' });
   });
 
-program.parse(process.argv);
 
-// Exporting for tests
+
 export const greet = (name: string) => `Hello, ${name}!`;
