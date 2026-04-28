@@ -1,0 +1,45 @@
+name: Insighta-labs CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  cli:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.x"
+          cache: "npm"
+          cache-dependency-path: src/package-lock.json
+
+      - name: Install deps
+        working-directory: src
+        run: npm ci
+
+      - name: Lint
+        working-directory: src
+        run: npm run lint
+
+      - name: Build
+        working-directory: src
+        run: npm run build
+
+      - name: Run tests
+        working-directory: src
+        run: npm test
+
+      - name: Link CLI
+        working-directory: src
+        run: npm link
+
+      - name: Test CLI help
+        run: insighta-cli --help
