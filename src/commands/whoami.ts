@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import { getStoredUser } from '../lib/api.js';
 import { getCredentials, isTokenExpired } from '../config/store.js';
 import { printTable, printError, printInfo } from '../lib/ui.js';
@@ -9,7 +8,7 @@ export function registerWhoami(program: Command) {
     .command('whoami')
     .description('Display the currently authenticated user')
     .option('--json', 'Output raw JSON instead of a table')
-    .action(async (options: any) => {
+    .action(async (options: { json?: boolean }) => {
       const creds = getCredentials();
 
       if (!creds) {

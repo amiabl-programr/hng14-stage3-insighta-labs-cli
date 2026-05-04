@@ -10,7 +10,7 @@ export function registerLogout(program: Command) {
     .command('logout')
     .description('Sign out and remove stored credentials')
     .option('-f, --force', 'Skip confirmation prompt')
-    .action(async (options: any) => {
+    .action(async (options: { force?: boolean }) => {
       const creds = getCredentials();
 
       if (!creds) {

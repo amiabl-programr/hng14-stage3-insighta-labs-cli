@@ -5,6 +5,7 @@ import {
   saveCredentials,
   clearCredentials,
   isTokenExpired,
+  type Credentials,
 } from '../config/store.js';
 
 const BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
@@ -79,7 +80,6 @@ client.interceptors.response.use(
 
 const POLL_INTERVAL = 2000;
 const MAX_POLL_ATTEMPTS = 150;
-const AUTH_TIMEOUT = MAX_POLL_ATTEMPTS * POLL_INTERVAL;
 
 export async function initiateLogin() {
   const { data } = await axios.get(`${BASE_URL}/auth/github`, {
@@ -135,11 +135,11 @@ export async function pollForTokens(tempToken: string): Promise<{
           user: data.user,
         };
       }
-    } catch (error: any) {
-      if (error.response?.status === 410) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 410) {
         throw new Error('Session expired. Please run `insighta login` again.');
       }
-      if (error.response?.status === 202) {
+      if (axios.isAxiosError(error) && error.response?.status === 202) {
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
         attempts++;
         continue;
@@ -167,14 +167,14 @@ export async function completeLogin() {
   return credentials;
 }
 
-async function refreshAccessToken(refreshToken: string) {
+async function refreshAccessToken(refreshToken: string): Promise<Credentials> {
   const { data } = await axios.post(`${BASE_URL}/auth/refresh`, {
     refreshToken,
   });
 
   const creds = getCredentials();
-  const updated = {
-    ...creds,
+  const updated: Credentials = {
+    ...creds!,
     accessToken: data.access_token,
     refreshToken: data.refresh_token ?? refreshToken,
     expiresAt: data.expires_in ? Date.now() + data.expires_in * 1000 : null,
