@@ -2,41 +2,40 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
-const configDir = path.join(os.homedir(), ".insighta");
-const configFile = path.join(configDir, "credentials.json");
+const CREDENTIALS_DIR = path.join(os.homedir(), ".insighta");
+const CREDENTIALS_FILE = path.join(CREDENTIALS_DIR, "credentials.json");
 
-
-export interface Config {
-  accessToken?: string;
-  refreshToken?: string;
-  [key: string]: unknown;
+function ensureDir() {
+  if (!fs.existsSync(CREDENTIALS_DIR)) {
+    fs.mkdirSync(CREDENTIALS_DIR, { recursive: true, mode: 0o700 });
+  }
 }
 
-export function saveConfig(data: Config): void {
-  if (!fs.existsSync(configDir)) {
-    fs.mkdirSync(configDir, { recursive: true });
-  }
-
-  fs.writeFileSync(configFile, JSON.stringify(data, null, 2), {
-    encoding: "utf-8",
-    // mode: 0o600, // add this later, so only the owner can read/write files
+export function saveCredentials(data: any) {
+  ensureDir();
+  fs.writeFileSync(CREDENTIALS_FILE, JSON.stringify(data, null, 2), {
+    mode: 0o600,
   });
 }
 
-export function getConfig(): Config | null {
-  if (!fs.existsSync(configFile)) return null;
-
-  const raw = fs.readFileSync(configFile, { encoding: "utf-8" });
-
+export function getCredentials() {
+  if (!fs.existsSync(CREDENTIALS_FILE)) return null;
   try {
-    return JSON.parse(raw) as Config;
+    const raw = fs.readFileSync(CREDENTIALS_FILE, "utf-8");
+    return JSON.parse(raw);
   } catch {
-    return null; 
+    return null;
   }
 }
 
-export function clearConfig(): void {
-  if (fs.existsSync(configFile)) {
-    fs.unlinkSync(configFile);
+export function clearCredentials() {
+  if (fs.existsSync(CREDENTIALS_FILE)) {
+    fs.unlinkSync(CREDENTIALS_FILE);
   }
+}
+
+export function isTokenExpired(credentials: any) {
+  if (!credentials?.expiresAt) return false;
+  // Treat as expired 60 seconds before actual expiry (buffer)
+  return Date.now() >= credentials.expiresAt - 60_000;
 }
