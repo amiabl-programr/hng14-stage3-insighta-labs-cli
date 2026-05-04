@@ -1,5 +1,5 @@
-import ora from "ora";
-import chalk from "chalk";
+import ora from 'ora';
+import chalk from 'chalk';
 
 // ── Spinner ───────────────────────────────────────────────────────────────────
 
@@ -11,10 +11,10 @@ import chalk from "chalk";
  * @returns {Promise<T>}
  */
 export async function withSpinner(text, task) {
-  const spinner = ora({ text, color: "cyan" }).start();
+  const spinner = ora({ text, color: 'cyan' }).start();
   try {
     const result = await task();
-    spinner.succeed(chalk.green("Done"));
+    spinner.succeed(chalk.green('Done'));
     return result;
   } catch (error) {
     spinner.fail(chalk.red(error.message));
@@ -32,7 +32,7 @@ export async function withSpinner(text, task) {
  */
 export function printTable(rows, columns) {
   if (!rows || rows.length === 0) {
-    console.log(chalk.yellow("No data to display."));
+    console.log(chalk.yellow('No data to display.'));
     return;
   }
 
@@ -40,32 +40,22 @@ export function printTable(rows, columns) {
 
   // Calculate column widths (header vs data)
   const widths = Object.fromEntries(
-    cols.map((col) => [
-      col,
-      Math.max(
-        col.length,
-        ...rows.map((r) => String(r[col] ?? "").length)
-      ),
-    ])
+    cols.map((col) => [col, Math.max(col.length, ...rows.map((r) => String(r[col] ?? '').length))]),
   );
 
-  const separator = cols.map((c) => "─".repeat(widths[c] + 2)).join("┼");
-  const header = cols
-    .map((c) => ` ${chalk.bold.cyan(c.padEnd(widths[c]))} `)
-    .join("│");
+  const separator = cols.map((c) => '─'.repeat(widths[c] + 2)).join('┼');
+  const header = cols.map((c) => ` ${chalk.bold.cyan(c.padEnd(widths[c]))} `).join('│');
 
-  console.log(`┌${separator.replace(/┼/g, "┬")}┐`);
+  console.log(`┌${separator.replace(/┼/g, '┬')}┐`);
   console.log(`│${header}│`);
   console.log(`├${separator}┤`);
 
   for (const row of rows) {
-    const line = cols
-      .map((c) => ` ${String(row[c] ?? "").padEnd(widths[c])} `)
-      .join("│");
+    const line = cols.map((c) => ` ${String(row[c] ?? '').padEnd(widths[c])} `).join('│');
     console.log(`│${line}│`);
   }
 
-  console.log(`└${separator.replace(/┼/g, "┴")}┘`);
+  console.log(`└${separator.replace(/┼/g, '┴')}┘`);
 }
 
 // ── Error helper ──────────────────────────────────────────────────────────────

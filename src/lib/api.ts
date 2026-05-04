@@ -1,14 +1,14 @@
-import axios from "axios";
-import open from "open";
+import axios from 'axios';
+import open from 'open';
 import {
   getCredentials,
   saveCredentials,
   clearCredentials,
   isTokenExpired,
-} from "../config/store.js";
+} from '../config/store.js';
 
-const BASE_URL = process.env.API_BASE_URL || "http://localhost:3000";
-const API_VERSION = process.env.API_VERSION || "1";
+const BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
+const API_VERSION = process.env.API_VERSION || '1';
 
 const client = axios.create({
   baseURL: BASE_URL,
@@ -19,8 +19,8 @@ const client = axios.create({
 client.interceptors.request.use(
   async (config) => {
     // Always add API version header for profile endpoints
-    if (config.url?.startsWith("/api/")) {
-      config.headers["X-API-Version"] = API_VERSION;
+    if (config.url?.startsWith('/api/')) {
+      config.headers['X-API-Version'] = API_VERSION;
     }
 
     let creds = getCredentials();
@@ -33,22 +33,18 @@ client.interceptors.request.use(
           creds = await refreshAccessToken(creds.refreshToken);
         } catch {
           clearCredentials();
-          return Promise.reject(
-            new Error("Session expired. Please run `insighta login` again.")
-          );
+          return Promise.reject(new Error('Session expired. Please run `insighta login` again.'));
         }
       } else {
         clearCredentials();
-        return Promise.reject(
-          new Error("Token expired. Please run `insighta login` again.")
-        );
+        return Promise.reject(new Error('Token expired. Please run `insighta login` again.'));
       }
     }
 
     config.headers.Authorization = `Bearer ${creds.accessToken}`;
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // ── Response interceptor: clean error messages ────────────────────────────────
@@ -60,29 +56,23 @@ client.interceptors.response.use(
 
     if (status === 401) {
       clearCredentials();
-      return Promise.reject(
-        new Error("Unauthorised. Please run `insighta login` again.")
-      );
+      return Promise.reject(new Error('Unauthorised. Please run `insighta login` again.'));
     }
     if (status === 403) {
-      return Promise.reject(new Error("Access denied."));
+      return Promise.reject(new Error('Access denied.'));
     }
     if (status === 429) {
-      return Promise.reject(new Error("Rate limit exceeded. Try again later."));
+      return Promise.reject(new Error('Rate limit exceeded. Try again later.'));
     }
-    if (error.code === "ECONNABORTED") {
-      return Promise.reject(new Error("Request timed out. Check your network."));
+    if (error.code === 'ECONNABORTED') {
+      return Promise.reject(new Error('Request timed out. Check your network.'));
     }
     if (!error.response) {
-      return Promise.reject(
-        new Error("Network error — is the server reachable?")
-      );
+      return Promise.reject(new Error('Network error — is the server reachable?'));
     }
 
-    return Promise.reject(
-      new Error(serverMessage || `Request failed (${status})`)
-    );
-  }
+    return Promise.reject(new Error(serverMessage || `Request failed (${status})`));
+  },
 );
 
 // ── Auth helpers ──────────────────────────────────────────────────────────────
@@ -93,11 +83,11 @@ const AUTH_TIMEOUT = MAX_POLL_ATTEMPTS * POLL_INTERVAL;
 
 export async function initiateLogin() {
   const { data } = await axios.get(`${BASE_URL}/auth/github`, {
-    params: { client: "cli" },
+    params: { client: 'cli' },
   });
 
   if (!data.auth_url || !data.temp_token) {
-    throw new Error("Invalid response from auth server");
+    throw new Error('Invalid response from auth server');
   }
 
   return { authUrl: data.auth_url, tempToken: data.temp_token };
@@ -123,12 +113,9 @@ export async function pollForTokens(tempToken: string): Promise<{
 
   while (attempts < MAX_POLL_ATTEMPTS) {
     try {
-      const { data, status } = await axios.get(
-        `${BASE_URL}/auth/github/callback`,
-        {
-          params: { temp_token: tempToken },
-        }
-      );
+      const { data, status } = await axios.get(`${BASE_URL}/auth/github/callback`, {
+        params: { temp_token: tempToken },
+      });
 
       if (status === 202) {
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
@@ -136,8 +123,8 @@ export async function pollForTokens(tempToken: string): Promise<{
         continue;
       }
 
-      if (data.status === "error") {
-        throw new Error(data.message || "Authentication failed");
+      if (data.status === 'error') {
+        throw new Error(data.message || 'Authentication failed');
       }
 
       if (data.access_token && data.refresh_token) {
@@ -150,7 +137,7 @@ export async function pollForTokens(tempToken: string): Promise<{
       }
     } catch (error: any) {
       if (error.response?.status === 410) {
-        throw new Error("Session expired. Please run `insighta login` again.");
+        throw new Error('Session expired. Please run `insighta login` again.');
       }
       if (error.response?.status === 202) {
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
@@ -161,7 +148,7 @@ export async function pollForTokens(tempToken: string): Promise<{
     }
   }
 
-  throw new Error("Authentication timed out. Please try again.");
+  throw new Error('Authentication timed out. Please try again.');
 }
 
 export async function completeLogin() {
@@ -202,7 +189,7 @@ export async function logout() {
   if (!creds) return;
 
   try {
-    await client.post("/auth/logout");
+    await client.post('/auth/logout');
   } catch {
     // Server-side revocation is best-effort; always clear locally
   } finally {

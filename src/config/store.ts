@@ -1,9 +1,9 @@
-import fs from "fs";
-import path from "path";
-import os from "os";
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
-const CREDENTIALS_DIR = path.join(os.homedir(), ".insighta");
-const CREDENTIALS_FILE = path.join(CREDENTIALS_DIR, "credentials.json");
+const CREDENTIALS_DIR = path.join(os.homedir(), '.insighta');
+const CREDENTIALS_FILE = path.join(CREDENTIALS_DIR, 'credentials.json');
 
 function ensureDir() {
   if (!fs.existsSync(CREDENTIALS_DIR)) {
@@ -21,7 +21,7 @@ export function saveCredentials(data: any) {
 export function getCredentials() {
   if (!fs.existsSync(CREDENTIALS_FILE)) return null;
   try {
-    const raw = fs.readFileSync(CREDENTIALS_FILE, "utf-8");
+    const raw = fs.readFileSync(CREDENTIALS_FILE, 'utf-8');
     return JSON.parse(raw);
   } catch {
     return null;
